@@ -60,8 +60,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
   }
 
+  .logo:hover { opacity: 0.85; }
   .logo span { font-size: 1.5rem; }
 
   .nav-pills {
@@ -896,19 +900,26 @@
   }
 
   /* ── MOBILE ── */
-  @media (max-width: 520px) {
-    header { padding: 0 16px; }
-    .logo  { font-size: 1.4rem; }
-    .nav-pill { font-size: 0.76rem; padding: 5px 12px; }
+  @media (max-width: 600px) {
+    header { padding: 0 12px; gap: 8px; }
+    .logo  { font-size: 1.25rem; }
+    .logo span { font-size: 1.2rem; }
+    .nav-pills { padding: 4px; gap: 3px; }
+    .nav-pill { font-size: 0.72rem; padding: 5px 10px; letter-spacing: 0; }
     .view  { padding: 20px 16px; }
     .who-tabs { gap: 8px; }
+  }
+
+  @media (max-width: 380px) {
+    .logo-text { display: none; }
+    .nav-pill { padding: 5px 8px; font-size: 0.7rem; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo"><span>🏆</span> ChoresChamp</div>
+  <div class="logo" onclick="showView('kids')" role="button" aria-label="Go to home"><span>🏆</span> <span class="logo-text">ChoresChamp</span></div>
   <div class="nav-pills">
     <button class="nav-pill active" onclick="showView('kids')">My Chores</button>
     <button class="nav-pill"        onclick="showView('parents')">Parents</button>
@@ -1098,12 +1109,45 @@ const CHEER_MSGS = [
 const today    = new Date();
 const todayDay = DAYS[today.getDay() === 0 ? 6 : today.getDay() - 1];
 
-let state = JSON.parse(localStorage.getItem('choreschamp_v2') || 'null') || {
+let state = {
   completions: {},
   allowanceReleased: { sara: 0, sophia: 0 },
 };
 
-function saveState() { localStorage.setItem('choreschamp_v2', JSON.stringify(state)); }
+// ── Persistence: Netlify Blobs via API (synced across all devices) ──
+// Falls back to localStorage if the API is unavailable (local dev without netlify dev)
+let _saveTimer = null;
+
+async function loadState() {
+  try {
+    const res = await fetch('/api/state');
+    if (res.ok) {
+      const remote = await res.json();
+      if (remote && remote.completions) {
+        state = remote;
+        return;
+      }
+    }
+  } catch (e) { /* offline or local dev — fall through to localStorage */ }
+  const local = localStorage.getItem('choreschamp_v2');
+  if (local) state = JSON.parse(local);
+}
+
+function saveState() {
+  // Always write to localStorage as an instant local backup
+  localStorage.setItem('choreschamp_v2', JSON.stringify(state));
+  // Debounce remote saves so rapid taps don't flood the API
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state),
+      });
+    } catch (e) { /* silent — localStorage already has the save */ }
+  }, 400);
+}
 
 function isDone(kid, day, name) { return state.completions[`${kid}_${day}_${name}`]?.done || false; }
 function getNote(kid, day, name) { return state.completions[`${kid}_${day}_${name}`]?.note || ''; }
@@ -1574,7 +1618,13 @@ function renderStats() {
 // ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
-function init() {
+async function init() {
+  // Show a subtle loading state while fetching shared state
+  document.getElementById('kidChoreList').innerHTML =
+    '<div style="text-align:center;padding:40px;color:var(--muted);font-weight:700;">Loading... ✨</div>';
+
+  await loadState();
+
   renderDayBar();
   renderKidView();
   // Pre-populate parent day select
