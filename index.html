@@ -839,6 +839,30 @@ function markDayComplete(kid, day) {
   saveState();
 }
 
+function unmarkDayComplete(kid, day) {
+  const key = `${kid}_${day}`;
+  if (!state.dayCompleted[key]) return;
+  delete state.dayCompleted[key];
+
+  // Reverse all-time totals
+  const chores = getChoresForKid(kid, day);
+  const doneCount = chores.filter(c => isDone(kid, day, c.name)).length;
+  state.allTime[kid].totalChores = Math.max(0, state.allTime[kid].totalChores - doneCount);
+  state.allTime[kid].totalDays   = Math.max(0, state.allTime[kid].totalDays - 1);
+
+  // Reverse streak only if this was the most recently completed day
+  const at = state.allTime[kid];
+  const completedDate = getDayDate(day);
+  if (at.lastCompletedDate === completedDate) {
+    at.streakCurrent = Math.max(0, (at.streakCurrent || 1) - 1);
+    const prevDate = new Date(completedDate);
+    prevDate.setDate(prevDate.getDate() - 1);
+    at.lastCompletedDate = at.streakCurrent > 0 ? prevDate.toISOString().slice(0, 10) : null;
+  }
+
+  saveState();
+}
+
 // ── UI State ──
 let currentKid  = 'sara';
 let currentDay  = todayDay;
@@ -1020,7 +1044,7 @@ function renderCompleteDaySection(kid, day, allChoresDone, dayDone) {
   let btnLabel, btnClass, encouragement, hintText;
 
   if (dayDone) {
-    btnLabel = `✓ ${day} Complete!`;
+    btnLabel = `✓ ${day} Complete! (tap to undo)`;
     btnClass = 'completed-state';
     encouragement = getAllowanceEncouragement(day);
     hintText = '';
@@ -1039,7 +1063,7 @@ function renderCompleteDaySection(kid, day, allChoresDone, dayDone) {
   section.innerHTML = `
     <div class="complete-day-section">
       <button class="complete-day-btn ${btnClass}"
-        ${dayDone || !allChoresDone ? 'disabled' : ''}
+        ${!dayDone && !allChoresDone ? 'disabled' : ''}
         onclick="kidMarkDayComplete('${kid}','${day}')">
         ${btnLabel}
       </button>
@@ -1050,11 +1074,17 @@ function renderCompleteDaySection(kid, day, allChoresDone, dayDone) {
 }
 
 function kidMarkDayComplete(kid, day) {
-  markDayComplete(kid, day);
-  if (day === 'Sunday') spawnConfetti();
-  showCelebration(kid, day, true);
-  renderKidView();
-  if (currentView === 'stats') renderChampionsBoard();
+  if (isDayCompleted(kid, day)) {
+    unmarkDayComplete(kid, day);
+    renderKidView();
+    if (currentView === 'stats') renderChampionsBoard();
+  } else {
+    markDayComplete(kid, day);
+    if (day === 'Sunday') spawnConfetti();
+    showCelebration(kid, day, true);
+    renderKidView();
+    if (currentView === 'stats') renderChampionsBoard();
+  }
 }
 
 function toggleNote(e, kid, day, safeId) {
@@ -1199,9 +1229,9 @@ function renderDailyView() {
     else if (allDone)    { badgeClass = 'cleared'; badgeText = '✅ Ready to Close'; }
     else                 { badgeClass = 'pending'; badgeText = `⏳ ${missingChores.length} Pending`; }
 
-    const btnDisabled  = dayClosed || !allDone;
+    const btnDisabled  = !dayClosed && !allDone;
     const btnLabel     = dayClosed
-      ? '✓ Day Closed Out'
+      ? '✓ Day Closed Out (tap to undo)'
       : isSunday
         ? `💰 Close & Release ${KID_NAME[kid]}'s Allowance`
         : `✓ Close Out ${day} for ${KID_NAME[kid]}`;
@@ -1242,8 +1272,12 @@ function renderDailyView() {
 }
 
 function parentMarkDayComplete(kid, day) {
-  markDayComplete(kid, day);
-  if (day === 'Sunday') spawnConfetti();
+  if (isDayCompleted(kid, day)) {
+    unmarkDayComplete(kid, day);
+  } else {
+    markDayComplete(kid, day);
+    if (day === 'Sunday') spawnConfetti();
+  }
   renderDailyView();
   renderWeekStrip(day);
   if (currentView === 'stats') renderChampionsBoard();
