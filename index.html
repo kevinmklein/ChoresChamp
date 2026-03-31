@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChoreChamp 🏆</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sara: #FF6B9D;
+    --sara-light: #FFE0ED;
+    --sara-dark: #D94F7E;
+    --sophia: #7C5CBF;
+    --sophia-light: #EDE8F9;
+    --sophia-dark: #5A3E9B;
+    --gold: #FFD700;
+    --gold-light: #FFF9CC;
+    --green: #2ECC71;
+    --green-light: #D5F5E3;
+    --red-light: #FDE8E8;
+    --orange: #FF9800;
+    --bg: #FAFBFF;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --muted: #8892A4;
+    --border: #E8ECF4;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 32px rgba(0,0,0,0.14);
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(102,126,234,0.4);
+  }
+
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    color: white;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo span { font-size: 1.5rem; }
+
+  .nav-pills {
+    display: flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    padding: 5px;
+    border-radius: 50px;
+  }
+
+  .nav-pill {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(255,255,255,0.75);
+    background: transparent;
+    letter-spacing: 0.3px;
+  }
+
+  .nav-pill.active {
+    background: white;
+    color: #5A3E9B;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+
+  .nav-pill:hover:not(.active) { color: white; background: rgba(255,255,255,0.2); }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 28px 24px; max-width: 1100px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* ── DAY SELECTOR ── */
+  .day-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .day-bar::-webkit-scrollbar { display: none; }
+
+  .day-btn {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: 2px solid var(--border);
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .day-btn.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+  }
+
+  .day-btn:hover:not(.active) { border-color: #764ba2; color: #764ba2; }
+
+  .day-btn.today-marker { position: relative; }
+  .day-btn.today-marker::after {
+    content: '•';
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--sophia);
+    font-size: 1rem;
+  }
+
+  /* ── WHO TABS ── */
+  .who-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .who-tab {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    border: 3px solid transparent;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+
+  .who-tab.sara { border-color: var(--sara-light); }
+  .who-tab.sara.active { background: var(--sara); border-color: var(--sara); color: white; }
+  .who-tab.sara:not(.active):hover { border-color: var(--sara); }
+
+  .who-tab.sophia { border-color: var(--sophia-light); }
+  .who-tab.sophia.active { background: var(--sophia); border-color: var(--sophia); color: white; }
+  .who-tab.sophia:not(.active):hover { border-color: var(--sophia); }
+
+  .who-tab-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    display: block;
+  }
+
+  .who-tab-sub {
+    font-size: 0.78rem;
+    font-weight: 700;
+    opacity: 0.7;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ── PROGRESS RING ── */
+  .progress-banner {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s;
+  }
+
+  .progress-banner.sara-theme { border-left: 5px solid var(--sara); }
+  .progress-banner.sophia-theme { border-left: 5px solid var(--sophia); }
+
+  .ring-wrap { flex-shrink: 0; position: relative; width: 80px; height: 80px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: var(--border); stroke-width: 7; }
+  .ring-fill { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .ring-fill.sara-ring { stroke: var(--sara); }
+  .ring-fill.sophia-ring { stroke: var(--sophia); }
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .progress-info { flex: 1; }
+  .progress-greeting {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  .progress-sub {
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  .streak-badge {
+    background: linear-gradient(135deg, var(--gold), #FFA500);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 0.82rem;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    box-shadow: 0 3px 12px rgba(255,165,0,0.4);
+    flex-shrink: 0;
+  }
+
+  /* ── CHORE CARDS ── */
+  .chores-section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .chore-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+  .chore-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 2px solid transparent;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: bounce-in 0.25s ease both;
+  }
+
+  .chore-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+
+  .chore-card.done {
+    background: var(--green-light);
+    border-color: var(--green);
+  }
+
+  .chore-card.done::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 10px,
+      rgba(46,204,113,0.04) 10px, rgba(46,204,113,0.04) 20px
+    );
+  }
+
+  .chore-check {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+  }
+
+  .chore-card.sara .chore-check { border-color: var(--sara-light); }
+  .chore-card.sara:hover .chore-check { border-color: var(--sara); }
+  .chore-card.sara.done .chore-check { background: var(--green); border-color: var(--green); }
+  .chore-card.sophia .chore-check { border-color: var(--sophia-light); }
+  .chore-card.sophia:hover .chore-check { border-color: var(--sophia); }
+  .chore-card.sophia.done .chore-check { background: var(--green); border-color: var(--green); }
+
+  .chore-body { flex: 1; min-width: 0; }
+  .chore-name { font-weight: 800; font-size: 1rem; color: var(--text); transition: color 0.2s; }
+  .chore-card.done .chore-name { text-decoration: line-through; color: var(--muted); }
+
+  .chore-meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chore-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .tag-footprint { background: #E3F2FD; color: #1565C0; }
+  .tag-practice  { background: #F3E5F5; color: #7B1FA2; }
+  .tag-kitchen   { background: #FFF3E0; color: #E65100; }
+  .tag-hygiene   { background: #FCE4EC; color: #AD1457; }
+  .tag-laundry   { background: #E8F5E9; color: #2E7D32; }
+
+  .chore-note-area { display: none; margin-top: 10px; }
+  .chore-note-area.visible { display: block; }
+
+  .chore-note-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    outline: none;
+    resize: none;
+    transition: border-color 0.2s;
+    background: var(--bg);
+    height: 56px;
+  }
+
+  .chore-note-input:focus { border-color: var(--sophia); }
+
+  .note-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .expand-btn.open { transform: rotate(180deg); }
+
+  /* ── CELEBRATION ── */
+  .celebration {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .celebration-toast {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 36px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    pointer-events: none;
+    transform: scale(0);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 320px;
+  }
+
+  .celebration-toast.show { transform: scale(1); }
+  .celebration-emoji { font-size: 3rem; display: block; margin-bottom: 8px; }
+  .celebration-msg { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--text); }
+  .celebration-sub { font-size: 0.9rem; color: var(--muted); font-weight: 700; margin-top: 4px; }
+
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 9998;
+    animation: confetti-fall 2s ease-in forwards;
+    border-radius: 2px;
+  }
+
+  @keyframes confetti-fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-day {
+    text-align: center;
+    padding: 48px 24px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .empty-day-emoji { font-size: 3.5rem; display: block; margin-bottom: 12px; }
+  .empty-day h3 { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--text); }
+  .empty-day p  { color: var(--muted); font-weight: 600; margin-top: 6px; font-size: 0.9rem; }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--text); }
+
+  .date-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: white;
+    padding: 6px 14px;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  /* ── ALL DONE BANNER ── */
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .all-done-banner {
+    background: linear-gradient(270deg, #2ECC71, #27AE60, #2ECC71);
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+    color: white;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 24px rgba(46,204,113,0.35);
+  }
+
+  .all-done-banner h2 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 4px; }
+  .all-done-banner p  { font-weight: 700; font-size: 0.9rem; opacity: 0.9; }
+
+  /* ══════════════════════════════════════════
+     PARENT VIEW
+  ══════════════════════════════════════════ */
+
+  /* sub-tab toggle inside parents view */
+  .parent-subtabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: white;
+    padding: 6px;
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+    width: fit-content;
+  }
+
+  .parent-subtab {
+    padding: 8px 22px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--muted);
+    background: transparent;
+  }
+
+  .parent-subtab.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 3px 10px rgba(102,126,234,0.35);
+  }
+
+  /* ── DAILY VIEW ── */
+  .parent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 680px) { .parent-grid { grid-template-columns: 1fr; } }
+
+  .parent-card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .parent-card-header {
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .parent-card-header.sara-header    { background: linear-gradient(135deg, var(--sara), var(--sara-dark)); }
+  .parent-card-header.sophia-header  { background: linear-gradient(135deg, var(--sophia), var(--sophia-dark)); }
+
+  .parent-card-name { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: white; }
+
+  .clearance-badge {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+  }
+
+  .clearance-badge.cleared {
+    background: var(--green);
+    color: white;
+    animation: pulse-green 2s infinite;
+  }
+
+  .clearance-badge.pending { background: rgba(255,255,255,0.25); color: white; }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0.4); }
+    50%       { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
+  }
+
+  .parent-card-body { padding: 16px 20px; }
+
+  .parent-stat-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+
+  .parent-stat {
+    text-align: center;
+    flex: 1;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 8px;
+  }
+
+  .parent-stat-val { font-family: 'Fredoka One', cursive; font-size: 1.8rem; line-height: 1; }
+  .parent-stat-val.done-color    { color: var(--green); }
+  .parent-stat-val.missing-color { color: #E74C3C; }
+  .parent-stat-val.pct-color     { color: var(--sophia); }
+
+  .parent-stat-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .parent-chore-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .parent-chore-row:last-child { border-bottom: none; }
+  .parent-chore-name { color: var(--text); }
+
+  .status-pill {
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+  }
+
+  .status-pill.done    { background: var(--green-light); color: #1a7a43; }
+  .status-pill.missing { background: var(--red-light); color: #C0392B; }
+
+  .parent-note-display {
+    background: var(--sophia-light);
+    border-left: 3px solid var(--sophia);
+    padding: 6px 10px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sophia-dark);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .allowance-release-btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    margin-top: 16px;
+  }
+
+  .allowance-release-btn.sara-btn    { background: var(--sara); color: white; box-shadow: 0 4px 14px rgba(255,107,157,0.4); }
+  .allowance-release-btn.sophia-btn  { background: var(--sophia); color: white; box-shadow: 0 4px 14px rgba(124,92,191,0.4); }
+  .allowance-release-btn:hover       { transform: translateY(-2px); filter: brightness(1.08); }
+  .allowance-release-btn:disabled    { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .parent-view-day {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .parent-view-day label { font-weight: 800; font-size: 0.9rem; color: var(--muted); }
+
+  .parent-view-day select {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 12px;
+    background: var(--bg);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .parent-view-day select:focus { border-color: var(--sophia); }
+
+  /* ══════════════════════════════════════════
+     WEEKLY SUMMARY VIEW
+  ══════════════════════════════════════════ */
+
+  .weekly-header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .weekly-kid-filter {
+    display: flex;
+    gap: 6px;
+    background: white;
+    padding: 5px;
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+  }
+
+  .wkf-btn {
+    padding: 7px 18px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--muted);
+    background: transparent;
+  }
+
+  .wkf-btn.sara.active    { background: var(--sara); color: white; box-shadow: 0 2px 10px rgba(255,107,157,0.35); }
+  .wkf-btn.sophia.active  { background: var(--sophia); color: white; box-shadow: 0 2px 10px rgba(124,92,191,0.35); }
+  .wkf-btn:not(.active):hover { color: var(--text); }
+
+  /* weekly grid: rows = chores, cols = days */
+  .weekly-table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: white;
+    margin-bottom: 24px;
+  }
+
+  .weekly-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+
+  .weekly-table th {
+    padding: 12px 14px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--border);
+    text-align: center;
+  }
+
+  .weekly-table th.chore-col {
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    min-width: 170px;
+    padding-left: 18px;
+  }
+
+  .weekly-table th.day-col {
+    color: var(--text);
+    min-width: 80px;
+  }
+
+  .weekly-table th.day-col.is-today {
+    color: #5A3E9B;
+    position: relative;
+  }
+
+  .weekly-table th.day-col.is-today::after {
+    content: '★';
+    display: block;
+    font-size: 0.6rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .weekly-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .weekly-table tr:last-child td { border-bottom: none; }
+
+  .weekly-table td.chore-name-cell {
+    text-align: left;
+    padding-left: 18px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text);
+  }
+
+  .weekly-table tr:hover td { background: #fafbff; }
+
+  .week-cell-done    { font-size: 1.1rem; }
+  .week-cell-missing { font-size: 1rem; color: #E74C3C; font-weight: 900; }
+  .week-cell-noassign { color: var(--border); font-size: 0.9rem; }
+
+  /* Day summary row at bottom */
+  .weekly-table tfoot tr { background: var(--bg); }
+
+  .weekly-table tfoot td {
+    padding: 12px 14px;
+    border-top: 2px solid var(--border);
+    border-bottom: none;
+    font-weight: 800;
+    font-size: 0.82rem;
+  }
+
+  .weekly-table tfoot td.summary-label {
+    text-align: left;
+    padding-left: 18px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .day-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 24px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+  }
+
+  .day-summary-pill.all-clear { background: var(--green-light); color: #1a7a43; }
+  .day-summary-pill.partial   { background: var(--gold-light); color: #7a5900; }
+  .day-summary-pill.none      { background: var(--red-light); color: #C0392B; }
+  .day-summary-pill.unassigned { background: var(--bg); color: var(--muted); }
+
+  /* weekly stats cards */
+  .weekly-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 520px) { .weekly-stats-row { grid-template-columns: 1fr 1fr; } }
+
+  .wk-stat {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  .wk-stat-val { font-family: 'Fredoka One', cursive; font-size: 2rem; line-height: 1; }
+  .wk-stat-label { font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; display: block; }
+
+  /* ── STATS VIEW ── */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 680px) { .stats-grid { grid-template-columns: 1fr; } }
+
+  .stat-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .stat-card-header { padding: 16px 20px; font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: white; }
+  .stat-card-header.sara-header   { background: linear-gradient(135deg, var(--sara), var(--sara-dark)); }
+  .stat-card-header.sophia-header { background: linear-gradient(135deg, var(--sophia), var(--sophia-dark)); }
+  .stat-card-body { padding: 16px 20px; }
+
+  .big-stat { display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px; }
+  .big-num { font-family: 'Fredoka One', cursive; font-size: 3.5rem; line-height: 1; }
+  .big-num.sara-col   { color: var(--sara); }
+  .big-num.sophia-col { color: var(--sophia); }
+  .big-label { font-size: 0.9rem; font-weight: 700; color: var(--muted); }
+
+  .chore-freq-bar { margin-bottom: 10px; }
+  .chore-freq-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+  .chore-freq-count { color: var(--muted); }
+  .chore-freq-track { height: 8px; background: var(--border); border-radius: 50px; overflow: hidden; }
+  .chore-freq-fill { height: 100%; border-radius: 50px; transition: width 0.6s ease; }
+  .sara-fill   { background: linear-gradient(90deg, var(--sara-light), var(--sara)); }
+  .sophia-fill { background: linear-gradient(90deg, var(--sophia-light), var(--sophia)); }
+
+  .allowance-card {
+    background: linear-gradient(135deg, var(--gold-light), #FFF3CC);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.2);
+  }
+
+  .allowance-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #7a5900; margin-bottom: 12px; }
+  .allowance-row { display: flex; justify-content: space-around; gap: 12px; }
+  .allowance-item { text-align: center; }
+  .allowance-amt { font-family: 'Fredoka One', cursive; font-size: 2rem; color: #7a5900; line-height: 1; }
+  .allowance-name { font-size: 0.8rem; font-weight: 800; color: #A67C00; margin-top: 2px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes bounce-in {
+    0%   { transform: scale(0.8); opacity: 0; }
+    60%  { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 520px) {
+    header { padding: 0 16px; }
+    .logo  { font-size: 1.4rem; }
+    .nav-pill { font-size: 0.76rem; padding: 5px 12px; }
+    .view  { padding: 20px 16px; }
+    .who-tabs { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>🏆</span> ChoreChamp</div>
+  <div class="nav-pills">
+    <button class="nav-pill active" onclick="showView('kids')">My Chores</button>
+    <button class="nav-pill"        onclick="showView('parents')">Parents</button>
+    <button class="nav-pill"        onclick="showView('stats')">Stats</button>
+  </div>
+</header>
+
+<!-- CELEBRATION OVERLAY -->
+<div class="celebration" id="celebration">
+  <div class="celebration-toast" id="celebToast">
+    <span class="celebration-emoji" id="celebEmoji">🎉</span>
+    <div class="celebration-msg" id="celebMsg">Amazing!</div>
+    <div class="celebration-sub" id="celebSub">Keep it up!</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ KIDS VIEW ════════════════════════════════ -->
+<div id="view-kids" class="view active">
+  <div class="section-header">
+    <div class="section-title">Today's Chores ✨</div>
+    <div class="date-label" id="kidDateLabel">–</div>
+  </div>
+
+  <div class="day-bar" id="kidDayBar"></div>
+
+  <div class="who-tabs">
+    <button class="who-tab sara active" id="tabSara" onclick="switchKid('sara')">
+      <span class="who-tab-name">🐻 Sara</span>
+      <span class="who-tab-sub" id="saraTabSub">0/0 done</span>
+    </button>
+    <button class="who-tab sophia" id="tabSophia" onclick="switchKid('sophia')">
+      <span class="who-tab-name">🐒 Sophia</span>
+      <span class="who-tab-sub" id="sophiaTabSub">0/0 done</span>
+    </button>
+  </div>
+
+  <div class="progress-banner sara-theme" id="progressBanner">
+    <div class="ring-wrap">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <circle class="ring-track" cx="40" cy="40" r="33"/>
+        <circle class="ring-fill sara-ring" id="ringFill" cx="40" cy="40" r="33"
+          stroke-dasharray="207.3" stroke-dashoffset="207.3"/>
+      </svg>
+      <div class="ring-text" id="ringPct">0%</div>
+    </div>
+    <div class="progress-info">
+      <div class="progress-greeting" id="progressGreeting">Let's get started! 💪</div>
+      <div class="progress-sub" id="progressSub">Complete your chores to earn rewards!</div>
+    </div>
+    <div class="streak-badge" id="streakBadge">🔥 0 streak</div>
+  </div>
+
+  <div id="kidChoreList"></div>
+</div>
+
+<!-- ════════════════════════════════ PARENTS VIEW ════════════════════════════════ -->
+<div id="view-parents" class="view">
+  <div class="section-header">
+    <div class="section-title">Parent Dashboard 👀</div>
+    <div class="date-label" id="parentDateLabel">–</div>
+  </div>
+
+  <div class="parent-subtabs">
+    <button class="parent-subtab active" id="pTab-daily"  onclick="switchParentTab('daily')">Daily View</button>
+    <button class="parent-subtab"        id="pTab-weekly" onclick="switchParentTab('weekly')">Weekly Summary</button>
+  </div>
+
+  <!-- DAILY -->
+  <div id="parentDailySection">
+    <div class="parent-view-day">
+      <label>Viewing day:</label>
+      <select id="parentDaySelect" onchange="renderDailyView()"></select>
+    </div>
+    <div class="parent-grid" id="parentGrid"></div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div id="parentWeeklySection" style="display:none;">
+    <div class="weekly-header-row">
+      <div class="weekly-kid-filter">
+        <button class="wkf-btn sara active" id="wkf-sara"   onclick="switchWeeklyKid('sara')">🐻 Sara</button>
+        <button class="wkf-btn sophia"      id="wkf-sophia" onclick="switchWeeklyKid('sophia')">🐒 Sophia</button>
+      </div>
+    </div>
+    <div id="weeklyStatsRow" class="weekly-stats-row" style="margin-bottom:20px;"></div>
+    <div class="weekly-table-wrap">
+      <table class="weekly-table" id="weeklyTable">
+        <thead id="weeklyTHead"></thead>
+        <tbody id="weeklyTBody"></tbody>
+        <tfoot id="weeklyTFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ STATS VIEW ════════════════════════════════ -->
+<div id="view-stats" class="view">
+  <div class="section-header">
+    <div class="section-title">Champions Board 🏅</div>
+  </div>
+
+  <div class="allowance-card">
+    <h3>💰 Allowance Released This Week</h3>
+    <div class="allowance-row">
+      <div class="allowance-item">
+        <div class="allowance-amt" id="saraAllowance">$0.00</div>
+        <div class="allowance-name">🐻 Sara</div>
+      </div>
+      <div style="width:1px; background: var(--gold); opacity:0.4;"></div>
+      <div class="allowance-item">
+        <div class="allowance-amt" id="sophiaAllowance">$0.00</div>
+        <div class="allowance-name">🐒 Sophia</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA MODEL
+// ══════════════════════════════════════════
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+const CHORES = [
+  { name: 'Dishes', tag: 'kitchen',
+    schedule: { Monday:'sara', Tuesday:'sophia', Wednesday:'sara', Thursday:'sophia', Friday:'sara', Saturday:'sophia', Sunday:'sophia' }
+  },
+  { name: 'Kitchen Clean-up', tag: 'kitchen',
+    schedule: { Monday:'sophia', Tuesday:'sara', Wednesday:'sophia', Thursday:'sara', Friday:'sophia', Saturday:'sara', Sunday:'sara' }
+  },
+  { name: 'Laundry', tag: 'laundry',
+    schedule: { Monday:'sara', Tuesday:null, Wednesday:'sophia', Thursday:null, Friday:null, Saturday:'sara', Sunday:'sophia' }
+  },
+  { name: 'Footprints: Bedroom', tag: 'footprint',
+    schedule: { Monday:'all', Tuesday:'all', Wednesday:'all', Thursday:'all', Friday:'all', Saturday:'all', Sunday:null }
+  },
+  { name: 'Footprints: Stairs', tag: 'footprint',
+    schedule: { Monday:'sara', Tuesday:'sophia', Wednesday:'sara', Thursday:'sophia', Friday:'sara', Saturday:'sophia', Sunday:null }
+  },
+  { name: 'Footprints: Living Room', tag: 'footprint',
+    schedule: { Monday:'sophia', Tuesday:'sara', Wednesday:'sophia', Thursday:'sara', Friday:'sophia', Saturday:'sara', Sunday:null }
+  },
+  { name: 'Footprints: Play Room', tag: 'footprint',
+    schedule: { Monday:'sara', Tuesday:'sophia', Wednesday:'sara', Thursday:'sophia', Friday:'sara', Saturday:'sophia', Sunday:null }
+  },
+  { name: 'Footprints: Bathroom', tag: 'footprint',
+    schedule: { Monday:'sophia', Tuesday:'sophia', Wednesday:'sophia', Thursday:'sophia', Friday:'sophia', Saturday:'sophia', Sunday:null }
+  },
+  { name: 'Footprints: Classroom', tag: 'footprint',
+    schedule: { Monday:'sophia', Tuesday:'sara', Wednesday:'sophia', Thursday:'sara', Friday:'sophia', Saturday:'sara', Sunday:null }
+  },
+  { name: 'Footprints: Music Room', tag: 'footprint',
+    schedule: { Monday:'sara', Tuesday:'sophia', Wednesday:'sara', Thursday:'sophia', Friday:'sara', Saturday:'sophia', Sunday:null }
+  },
+  { name: 'Piano Practice (20 min)', tag: 'practice',
+    schedule: { Monday:'all', Tuesday:'all', Wednesday:'all', Thursday:'all', Friday:'all', Saturday:'all', Sunday:null }
+  },
+  { name: 'Clarinet Practice (20 min)', tag: 'practice',
+    schedule: { Monday:null, Tuesday:null, Wednesday:'sophia', Thursday:'sophia', Friday:'sophia', Saturday:'sophia', Sunday:'sophia' }
+  },
+  { name: 'Shower & Wash Hair', tag: 'hygiene',
+    schedule: { Monday:null, Tuesday:'sophia', Wednesday:'sara', Thursday:'sara', Friday:'sophia', Saturday:null, Sunday:'all' }
+  },
+];
+
+const TAG_LABELS  = { footprint:'👣 Footprints', practice:'🎵 Practice', kitchen:'🍽 Kitchen', hygiene:'🚿 Hygiene', laundry:'🧺 Laundry' };
+const TAG_CLASSES = { footprint:'tag-footprint', practice:'tag-practice', kitchen:'tag-kitchen', hygiene:'tag-hygiene', laundry:'tag-laundry' };
+
+const KID_EMOJI = { sara: '🐻', sophia: '🐒' };
+const KID_NAME  = { sara: 'Sara', sophia: 'Sophia' };
+
+const CHEER_MSGS = [
+  ['🎉','Crushed it!','One down, more to go!'],
+  ['⭐','Star move!','You\'re on fire today!'],
+  ['🙌','Nailed it!','The family thanks you!'],
+  ['✅','Check!','That\'s how it\'s done!'],
+  ['💪','Flex!','Powerhouse chore champion!'],
+  ['🏆','Trophy earned!','Allowance incoming!'],
+  ['🌟','Shining!','Parents are gonna love this!'],
+  ['🎊','BOOM!','Look at you go!'],
+];
+
+// ── State ──
+const today    = new Date();
+const todayDay = DAYS[today.getDay() === 0 ? 6 : today.getDay() - 1];
+
+let state = JSON.parse(localStorage.getItem('chorechamp_v2') || 'null') || {
+  completions: {},
+  allowanceReleased: { sara: 0, sophia: 0 },
+};
+
+function saveState() { localStorage.setItem('chorechamp_v2', JSON.stringify(state)); }
+
+function isDone(kid, day, name) { return state.completions[`${kid}_${day}_${name}`]?.done || false; }
+function getNote(kid, day, name) { return state.completions[`${kid}_${day}_${name}`]?.note || ''; }
+
+function toggleDone(kid, day, name) {
+  const key = `${kid}_${day}_${name}`;
+  const cur = state.completions[key] || { done: false, note: '' };
+  cur.done = !cur.done;
+  state.completions[key] = cur;
+  saveState();
+}
+
+function setNote(kid, day, name, val) {
+  const key = `${kid}_${day}_${name}`;
+  if (!state.completions[key]) state.completions[key] = { done: false, note: '' };
+  state.completions[key].note = val;
+  saveState();
+}
+
+function getAssigned(chore, day) {
+  const s = chore.schedule[day];
+  if (!s) return [];
+  if (s === 'all') return ['sara','sophia'];
+  return [s];
+}
+
+function getChoresForKid(kid, day) {
+  return CHORES.filter(c => getAssigned(c, day).includes(kid));
+}
+
+// ── UI State ──
+let currentKid     = 'sara';
+let currentDay     = todayDay;
+let currentView    = 'kids';
+let parentTab      = 'daily';
+let weeklyKid      = 'sara';
+
+// ══════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════
+function showView(v) {
+  currentView = v;
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach((p, i) => {
+    p.classList.toggle('active', ['kids','parents','stats'][i] === v);
+  });
+  if (v === 'parents') { renderDailyView(); if (parentTab === 'weekly') renderWeeklyView(); }
+  if (v === 'stats')   renderStats();
+}
+
+function switchParentTab(tab) {
+  parentTab = tab;
+  document.getElementById('pTab-daily').classList.toggle('active', tab === 'daily');
+  document.getElementById('pTab-weekly').classList.toggle('active', tab === 'weekly');
+  document.getElementById('parentDailySection').style.display  = tab === 'daily'  ? '' : 'none';
+  document.getElementById('parentWeeklySection').style.display = tab === 'weekly' ? '' : 'none';
+  if (tab === 'weekly') renderWeeklyView();
+}
+
+function switchWeeklyKid(kid) {
+  weeklyKid = kid;
+  document.getElementById('wkf-sara').classList.toggle('active', kid === 'sara');
+  document.getElementById('wkf-sophia').classList.toggle('active', kid === 'sophia');
+  renderWeeklyView();
+}
+
+function switchKid(kid) {
+  currentKid = kid;
+  document.getElementById('tabSara').classList.toggle('active', kid === 'sara');
+  document.getElementById('tabSophia').classList.toggle('active', kid === 'sophia');
+  renderKidView();
+}
+
+// ══════════════════════════════════════════
+//  KIDS VIEW
+// ══════════════════════════════════════════
+function renderDayBar() {
+  const bar = document.getElementById('kidDayBar');
+  bar.innerHTML = '';
+  DAYS.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (d === currentDay ? ' active' : '') + (d === todayDay ? ' today-marker' : '');
+    btn.textContent = d.slice(0,3);
+    btn.onclick = () => { currentDay = d; renderKidView(); renderDayBar(); };
+    bar.appendChild(btn);
+  });
+}
+
+function renderTabSubs() {
+  ['sara','sophia'].forEach(kid => {
+    const chores = getChoresForKid(kid, currentDay);
+    const done   = chores.filter(c => isDone(kid, currentDay, c.name)).length;
+    document.getElementById(kid === 'sara' ? 'saraTabSub' : 'sophiaTabSub').textContent = `${done}/${chores.length} done`;
+  });
+}
+
+function renderKidView() {
+  const kid    = currentKid;
+  const day    = currentDay;
+  const chores = getChoresForKid(kid, day);
+  const done   = chores.filter(c => isDone(kid, day, c.name)).length;
+  const pct    = chores.length ? Math.round((done / chores.length) * 100) : 100;
+
+  document.getElementById('kidDateLabel').textContent = day === todayDay ? `Today · ${day}` : day;
+
+  // Ring
+  const circ = 207.3;
+  document.getElementById('ringFill').style.strokeDashoffset = circ - (circ * pct / 100);
+  document.getElementById('ringFill').className = `ring-fill ${kid}-ring`;
+  document.getElementById('ringPct').textContent = pct + '%';
+
+  document.getElementById('progressBanner').className = `progress-banner ${kid}-theme`;
+
+  let greeting, sub;
+  if (!chores.length)         { greeting = `Day off! 🎉`; sub = 'No chores today — enjoy!'; }
+  else if (done === 0)        { greeting = `Let's do this, ${KID_NAME[kid]}! 💪`; sub = 'Knock out those chores → earn your allowance!'; }
+  else if (done === chores.length) { greeting = `ALL DONE! You rock! 🏆`; sub = 'Seriously — the whole family is proud of you!'; }
+  else if (pct >= 50)         { greeting = `Halfway there! ${KID_NAME[kid]} ⚡`; sub = `${chores.length - done} chore${chores.length - done > 1 ? 's' : ''} left — you've got this!`; }
+  else                        { greeting = `Good start! Keep going 🌟`; sub = `${done} down, ${chores.length - done} to go!`; }
+
+  document.getElementById('progressGreeting').textContent = greeting;
+  document.getElementById('progressSub').textContent      = sub;
+  document.getElementById('streakBadge').textContent      = `🔥 ${calcStreak(kid)} streak`;
+
+  renderTabSubs();
+
+  const list = document.getElementById('kidChoreList');
+  list.innerHTML = '';
+
+  if (!chores.length) {
+    list.innerHTML = `<div class="empty-day"><span class="empty-day-emoji">🌴</span><h3>No chores today!</h3><p>Free time is yours — go have fun!</p></div>`;
+    return;
+  }
+
+  if (done === chores.length) {
+    const b = document.createElement('div');
+    b.className = 'all-done-banner';
+    b.innerHTML = `<h2>🎉 Every chore done!</h2><p>Allowance cleared — tell Mom or Dad!</p>`;
+    list.appendChild(b);
+  }
+
+  const groups = {};
+  chores.forEach(c => { if (!groups[c.tag]) groups[c.tag] = []; groups[c.tag].push(c); });
+
+  Object.entries(groups).forEach(([tag, tagChores]) => {
+    const title = document.createElement('div');
+    title.className = 'chores-section-title';
+    title.textContent = TAG_LABELS[tag];
+    list.appendChild(title);
+
+    const ul = document.createElement('div');
+    ul.className = 'chore-list';
+
+    tagChores.forEach(chore => {
+      const doneCurrent = isDone(kid, day, chore.name);
+      const note        = getNote(kid, day, chore.name);
+      const safeId      = chore.name.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+
+      const card = document.createElement('div');
+      card.className = `chore-card ${kid}${doneCurrent ? ' done' : ''}`;
+      card.style.animationDelay = Math.random() * 0.15 + 's';
+
+      card.innerHTML = `
+        <div class="chore-check">${doneCurrent ? '✅' : ''}</div>
+        <div class="chore-body">
+          <div class="chore-name">${chore.name}</div>
+          <div class="chore-meta">
+            <span class="chore-tag ${TAG_CLASSES[tag]}">${TAG_LABELS[tag]}</span>
+            ${note ? `<span style="color:var(--sophia);font-size:0.75rem">📝 ${note}</span>` : ''}
+          </div>
+          <div class="chore-note-area${doneCurrent ? ' visible' : ''}" id="note-${kid}-${day}-${safeId}">
+            <span class="note-label">Add a note (optional)</span>
+            <textarea class="chore-note-input" placeholder="e.g. Did extra scrubbing!" oninput="setNote('${kid}','${day}','${chore.name}',this.value)">${note}</textarea>
+          </div>
+        </div>
+        <button class="expand-btn${doneCurrent ? ' open' : ''}" onclick="toggleNote(event,'${kid}','${day}','${safeId}')">▾</button>
+      `;
+
+      card.addEventListener('click', e => {
+        if (e.target.closest('.chore-note-area') || e.target.closest('.expand-btn')) return;
+        toggleDone(kid, day, chore.name);
+        if (isDone(kid, day, chore.name)) showCelebration(kid, day);
+        renderKidView();
+      });
+
+      ul.appendChild(card);
+    });
+
+    list.appendChild(ul);
+  });
+}
+
+function toggleNote(e, kid, day, safeId) {
+  e.stopPropagation();
+  document.getElementById(`note-${kid}-${day}-${safeId}`).classList.toggle('visible');
+  e.currentTarget.classList.toggle('open');
+}
+
+function calcStreak(kid) {
+  let streak = 0;
+  const dayIdx = DAYS.indexOf(todayDay);
+  for (let i = dayIdx; i >= 0; i--) {
+    const d = DAYS[i];
+    const chores = getChoresForKid(kid, d);
+    if (!chores.length) continue;
+    if (chores.every(c => isDone(kid, d, c.name))) streak++;
+    else break;
+  }
+  return streak;
+}
+
+// ══════════════════════════════════════════
+//  CELEBRATION
+// ══════════════════════════════════════════
+function showCelebration(kid, day) {
+  const chores = getChoresForKid(kid, day);
+  const allDone = chores.length && chores.every(c => isDone(kid, day, c.name));
+  const [emoji, msg, sub] = allDone
+    ? ['🏆','ALL CHORES DONE!','Allowance unlocked — you champion!']
+    : CHEER_MSGS[Math.floor(Math.random() * CHEER_MSGS.length)];
+
+  document.getElementById('celebEmoji').textContent = emoji;
+  document.getElementById('celebMsg').textContent   = msg;
+  document.getElementById('celebSub').textContent   = sub;
+  const toast = document.getElementById('celebToast');
+  toast.classList.add('show');
+  if (allDone) spawnConfetti();
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+function spawnConfetti() {
+  const colors = ['#FF6B9D','#7C5CBF','#FFD700','#2ECC71','#FF9800','#3498DB'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `left:${Math.random()*100}vw;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*0.8}s;animation-duration:${1.5+Math.random()}s;transform:rotate(${Math.random()*360}deg);border-radius:${Math.random()>0.5?'50%':'2px'};`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 2500);
+  }
+}
+
+// ══════════════════════════════════════════
+//  DAILY PARENT VIEW
+// ══════════════════════════════════════════
+function renderDailyView() {
+  const select = document.getElementById('parentDaySelect');
+  if (!select.options.length) {
+    DAYS.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d + (d === todayDay ? ' (Today)' : '');
+      select.appendChild(opt);
+    });
+    select.value = todayDay;
+  }
+  const day = select.value;
+  document.getElementById('parentDateLabel').textContent = day;
+
+  const grid = document.getElementById('parentGrid');
+  grid.innerHTML = '';
+
+  ['sara','sophia'].forEach(kid => {
+    const chores      = getChoresForKid(kid, day);
+    const doneChores  = chores.filter(c => isDone(kid, day, c.name));
+    const missingChores = chores.filter(c => !isDone(kid, day, c.name));
+    const pct         = chores.length ? Math.round(doneChores.length / chores.length * 100) : 100;
+    const cleared     = chores.length > 0 && missingChores.length === 0;
+    const releasedKey = `${kid}_${day}`;
+    const isReleased  = !!state.allowanceReleased[releasedKey];
+
+    const card = document.createElement('div');
+    card.className = 'parent-card';
+    card.innerHTML = `
+      <div class="parent-card-header ${kid}-header">
+        <div class="parent-card-name">${KID_EMOJI[kid]} ${KID_NAME[kid]}</div>
+        <div class="clearance-badge ${cleared ? 'cleared' : 'pending'}">
+          ${cleared ? '✅ Clear for Allowance' : `⏳ ${missingChores.length} Pending`}
+        </div>
+      </div>
+      <div class="parent-card-body">
+        <div class="parent-stat-row">
+          <div class="parent-stat"><div class="parent-stat-val done-color">${doneChores.length}</div><span class="parent-stat-label">Done</span></div>
+          <div class="parent-stat"><div class="parent-stat-val missing-color">${missingChores.length}</div><span class="parent-stat-label">Missing</span></div>
+          <div class="parent-stat"><div class="parent-stat-val pct-color">${pct}%</div><span class="parent-stat-label">Complete</span></div>
+        </div>
+        ${chores.map(c => {
+          const done = isDone(kid, day, c.name);
+          const note = getNote(kid, day, c.name);
+          return `<div class="parent-chore-row">
+            <div>
+              <div class="parent-chore-name">${c.name}</div>
+              ${note ? `<div class="parent-note-display">📝 "${note}"</div>` : ''}
+            </div>
+            <span class="status-pill ${done ? 'done' : 'missing'}">${done ? '✓ Done' : '✗ Missing'}</span>
+          </div>`;
+        }).join('')}
+        <button class="allowance-release-btn ${kid}-btn" onclick="releaseAllowance('${kid}','${day}',this)" ${isReleased ? 'disabled' : ''}>
+          ${isReleased ? '💸 Allowance Released' : `💰 Release ${KID_NAME[kid]}'s Allowance`}
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function releaseAllowance(kid, day, btn) {
+  const releasedKey = `${kid}_${day}`;
+  state.allowanceReleased[releasedKey] = true;
+  const chores  = getChoresForKid(kid, day);
+  const cleared = chores.length > 0 && chores.every(c => isDone(kid, day, c.name));
+  state.allowanceReleased[kid] = (state.allowanceReleased[kid] || 0) + (cleared ? 5 : 2.50);
+  saveState();
+  btn.disabled    = true;
+  btn.textContent = '💸 Allowance Released';
+  if (currentView === 'stats') renderStats();
+}
+
+// ══════════════════════════════════════════
+//  WEEKLY SUMMARY VIEW
+// ══════════════════════════════════════════
+function renderWeeklyView() {
+  const kid = weeklyKid;
+  const color = kid === 'sara' ? 'var(--sara)' : 'var(--sophia)';
+
+  // ── Stats row ──
+  let totalAssigned = 0, totalDone = 0, fullyCleared = 0;
+  DAYS.forEach(day => {
+    const chores = getChoresForKid(kid, day);
+    if (!chores.length) return;
+    totalAssigned += chores.length;
+    const dayDone = chores.filter(c => isDone(kid, day, c.name)).length;
+    totalDone += dayDone;
+    if (dayDone === chores.length) fullyCleared++;
+  });
+
+  const statsRow = document.getElementById('weeklyStatsRow');
+  statsRow.innerHTML = `
+    <div class="wk-stat">
+      <div class="wk-stat-val" style="color:${color}">${totalDone}</div>
+      <span class="wk-stat-label">Chores Done</span>
+    </div>
+    <div class="wk-stat">
+      <div class="wk-stat-val" style="color:#E74C3C">${totalAssigned - totalDone}</div>
+      <span class="wk-stat-label">Missing</span>
+    </div>
+    <div class="wk-stat">
+      <div class="wk-stat-val" style="color:var(--green)">${fullyCleared}</div>
+      <span class="wk-stat-label">Full Days ✅</span>
+    </div>
+  `;
+
+  // ── Build table ──
+  // Only show chores assigned to this kid on at least one day
+  const relevantChores = CHORES.filter(c =>
+    DAYS.some(d => getAssigned(c, d).includes(kid))
+  );
+
+  // THEAD
+  const thead = document.getElementById('weeklyTHead');
+  thead.innerHTML = `<tr>
+    <th class="chore-col">Chore</th>
+    ${DAYS.map(d => `<th class="day-col${d === todayDay ? ' is-today' : ''}">${d.slice(0,3)}</th>`).join('')}
+    <th class="day-col" style="color:var(--muted);font-size:0.78rem;">Total</th>
+  </tr>`;
+
+  // TBODY
+  const tbody = document.getElementById('weeklyTBody');
+  tbody.innerHTML = relevantChores.map(chore => {
+    let choreTotal = 0;
+    const cells = DAYS.map(day => {
+      const assigned = getAssigned(chore, day).includes(kid);
+      if (!assigned) return `<td class="week-cell-noassign">–</td>`;
+      const done = isDone(kid, day, chore.name);
+      if (done) choreTotal++;
+      const note = getNote(kid, day, chore.name);
+      return `<td title="${note ? '📝 ' + note : ''}">${done
+        ? `<span class="week-cell-done" title="${note ? '📝 '+note : ''}">✅</span>`
+        : `<span class="week-cell-missing">✗</span>`
+      }</td>`;
+    }).join('');
+    return `<tr>
+      <td class="chore-name-cell">${chore.name}</td>
+      ${cells}
+      <td style="font-weight:900;color:${color};font-family:'Fredoka One',cursive;">${choreTotal}</td>
+    </tr>`;
+  }).join('');
+
+  // TFOOT — per-day summary
+  const tfoot = document.getElementById('weeklyTFoot');
+  const daySummaries = DAYS.map(day => {
+    const chores = getChoresForKid(kid, day);
+    if (!chores.length) return { assigned:0, done:0 };
+    return { assigned: chores.length, done: chores.filter(c => isDone(kid, day, c.name)).length };
+  });
+
+  tfoot.innerHTML = `<tr>
+    <td class="summary-label">Day Status</td>
+    ${daySummaries.map(s => {
+      if (s.assigned === 0) return `<td><span class="day-summary-pill unassigned">–</span></td>`;
+      if (s.done === s.assigned) return `<td><span class="day-summary-pill all-clear">✓ All</span></td>`;
+      if (s.done === 0) return `<td><span class="day-summary-pill none">0/${s.assigned}</span></td>`;
+      return `<td><span class="day-summary-pill partial">${s.done}/${s.assigned}</span></td>`;
+    }).join('')}
+    <td></td>
+  </tr>`;
+}
+
+// ══════════════════════════════════════════
+//  STATS VIEW
+// ══════════════════════════════════════════
+function renderStats() {
+  document.getElementById('saraAllowance').textContent   = '$' + (state.allowanceReleased?.sara   || 0).toFixed(2);
+  document.getElementById('sophiaAllowance').textContent = '$' + (state.allowanceReleased?.sophia || 0).toFixed(2);
+
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = '';
+
+  ['sara','sophia'].forEach(kid => {
+    let totalDone = 0;
+    const choreCounts = {};
+
+    DAYS.forEach(day => {
+      getChoresForKid(kid, day).forEach(c => {
+        if (isDone(kid, day, c.name)) {
+          totalDone++;
+          choreCounts[c.name] = (choreCounts[c.name] || 0) + 1;
+        }
+      });
+    });
+
+    const maxCount    = Math.max(...Object.values(choreCounts), 1);
+    const sortedChores = Object.entries(choreCounts).sort((a,b) => b[1]-a[1]);
+
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    card.innerHTML = `
+      <div class="stat-card-header ${kid}-header">${KID_EMOJI[kid]} ${KID_NAME[kid]}'s Stats</div>
+      <div class="stat-card-body">
+        <div class="big-stat">
+          <div class="big-num ${kid}-col">${totalDone}</div>
+          <div class="big-label">total chores<br>completed</div>
+        </div>
+        <div class="big-stat">
+          <div class="big-num ${kid}-col">${calcStreak(kid)}</div>
+          <div class="big-label">day<br>streak 🔥</div>
+        </div>
+        <div style="margin-top:8px;">
+          <div class="chores-section-title" style="margin-bottom:12px;">Chore Completions This Week</div>
+          ${sortedChores.length
+            ? sortedChores.map(([name, count]) => `
+              <div class="chore-freq-bar">
+                <div class="chore-freq-label"><span>${name}</span><span class="chore-freq-count">${count}×</span></div>
+                <div class="chore-freq-track"><div class="chore-freq-fill ${kid}-fill" style="width:${(count/maxCount)*100}%"></div></div>
+              </div>`).join('')
+            : '<div style="color:var(--muted);font-size:0.88rem;font-weight:600;">No completions yet this week!</div>'
+          }
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+function init() {
+  renderDayBar();
+  renderKidView();
+  // Pre-populate parent day select
+  DAYS.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = d + (d === todayDay ? ' (Today)' : '');
+    document.getElementById('parentDaySelect').appendChild(opt);
+  });
+  document.getElementById('parentDaySelect').value = todayDay;
+}
+
+init();
+</script>
+</body>
+</html>
