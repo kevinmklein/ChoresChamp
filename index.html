@@ -699,14 +699,14 @@ const todayDay = DAYS[today.getDay() === 0 ? 6 : today.getDay() - 1];
 // completions: { `${kid}_${day}_${choreName}`: { done, note } }
 // dayCompleted: { `${kid}_${day}`: true }  — parent marks day complete
 // allowanceReleased: { `${kid}_${weekKey}`: true }  — Sunday allowance per week
-// allTime: { sara: { totalChores, totalDays, streakBest }, sophia: { ... } }
+// allTime: { sara: { totalChores, totalDays, streakBest, streakCurrent, lastCompletedDate }, sophia: { ... } }
 let state = {
   completions: {},
   dayCompleted: {},
   allowanceReleased: {},
   allTime: {
-    sara:   { totalChores: 0, totalDays: 0, streakBest: 0 },
-    sophia: { totalChores: 0, totalDays: 0, streakBest: 0 },
+    sara:   { totalChores: 0, totalDays: 0, streakBest: 0, streakCurrent: 0, lastCompletedDate: null },
+    sophia: { totalChores: 0, totalDays: 0, streakBest: 0, streakCurrent: 0, lastCompletedDate: null },
   },
 };
 
@@ -728,7 +728,11 @@ async function loadState() {
       const remote = await res.json();
       if (remote && remote.completions) {
         // Merge: ensure allTime exists (backwards compat)
-        if (!remote.allTime) remote.allTime = { sara: { totalChores:0, totalDays:0, streakBest:0 }, sophia: { totalChores:0, totalDays:0, streakBest:0 } };
+        if (!remote.allTime) remote.allTime = { sara: { totalChores:0, totalDays:0, streakBest:0, streakCurrent:0, lastCompletedDate:null }, sophia: { totalChores:0, totalDays:0, streakBest:0, streakCurrent:0, lastCompletedDate:null } };
+        for (const kid of ['sara','sophia']) {
+          if (remote.allTime[kid].streakCurrent === undefined) remote.allTime[kid].streakCurrent = 0;
+          if (remote.allTime[kid].lastCompletedDate === undefined) remote.allTime[kid].lastCompletedDate = null;
+        }
         if (!remote.dayCompleted) remote.dayCompleted = {};
         if (!remote.allowanceReleased) remote.allowanceReleased = {};
         state = remote;
@@ -739,7 +743,11 @@ async function loadState() {
   const local = localStorage.getItem('choreschamp_v2');
   if (local) {
     const parsed = JSON.parse(local);
-    if (!parsed.allTime) parsed.allTime = { sara: { totalChores:0, totalDays:0, streakBest:0 }, sophia: { totalChores:0, totalDays:0, streakBest:0 } };
+    if (!parsed.allTime) parsed.allTime = { sara: { totalChores:0, totalDays:0, streakBest:0, streakCurrent:0, lastCompletedDate:null }, sophia: { totalChores:0, totalDays:0, streakBest:0, streakCurrent:0, lastCompletedDate:null } };
+    for (const kid of ['sara','sophia']) {
+      if (parsed.allTime[kid].streakCurrent === undefined) parsed.allTime[kid].streakCurrent = 0;
+      if (parsed.allTime[kid].lastCompletedDate === undefined) parsed.allTime[kid].lastCompletedDate = null;
+    }
     if (!parsed.dayCompleted) parsed.dayCompleted = {};
     if (!parsed.allowanceReleased) parsed.allowanceReleased = {};
     state = parsed;
@@ -790,6 +798,16 @@ function getChoresForKid(kid, day) {
   return CHORES.filter(c => getAssigned(c, day).includes(kid));
 }
 
+// Returns the ISO date (YYYY-MM-DD) for a given day name within the current week
+function getDayDate(dayName) {
+  const idx = DAYS.indexOf(dayName); // 0=Mon … 6=Sun
+  const now = new Date();
+  const todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const d = new Date(now);
+  d.setDate(d.getDate() + (idx - todayIdx));
+  return d.toISOString().slice(0, 10);
+}
+
 // Mark a day complete (parent action) and accrue all-time stats
 function markDayComplete(kid, day) {
   const key = `${kid}_${day}`;
@@ -802,10 +820,20 @@ function markDayComplete(kid, day) {
   state.allTime[kid].totalChores += doneCount;
   state.allTime[kid].totalDays   += 1;
 
-  // Update best streak
-  const streak = calcStreak(kid);
-  if (streak > state.allTime[kid].streakBest) {
-    state.allTime[kid].streakBest = streak;
+  // Update cumulative streak using actual calendar dates
+  const at = state.allTime[kid];
+  const completedDate = getDayDate(day);
+  const prevDate = new Date(completedDate);
+  prevDate.setDate(prevDate.getDate() - 1);
+  const prevDateStr = prevDate.toISOString().slice(0, 10);
+  if (at.lastCompletedDate === prevDateStr) {
+    at.streakCurrent = (at.streakCurrent || 0) + 1;
+  } else {
+    at.streakCurrent = 1;
+  }
+  at.lastCompletedDate = completedDate;
+  if (at.streakCurrent > at.streakBest) {
+    at.streakBest = at.streakCurrent;
   }
 
   saveState();
@@ -1036,14 +1064,7 @@ function toggleNote(e, kid, day, safeId) {
 }
 
 function calcStreak(kid) {
-  let streak = 0;
-  const dayIdx = DAYS.indexOf(todayDay);
-  for (let i = dayIdx; i >= 0; i--) {
-    const d = DAYS[i];
-    if (isDayCompleted(kid, d)) streak++;
-    else break;
-  }
-  return streak;
+  return state.allTime[kid]?.streakCurrent || 0;
 }
 
 // ══════════════════════════════════════════
