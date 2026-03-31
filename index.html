@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChoreChamp 🏆</title>
+<title>ChoresChamp 🏆</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -104,7 +104,9 @@
     gap: 8px;
     margin-bottom: 28px;
     overflow-x: auto;
-    padding-bottom: 4px;
+    overflow-y: visible;
+    padding-top: 4px;
+    padding-bottom: 20px;
     scrollbar-width: none;
   }
   .day-bar::-webkit-scrollbar { display: none; }
@@ -906,7 +908,7 @@
 <body>
 
 <header>
-  <div class="logo"><span>🏆</span> ChoreChamp</div>
+  <div class="logo"><span>🏆</span> ChoresChamp</div>
   <div class="nav-pills">
     <button class="nav-pill active" onclick="showView('kids')">My Chores</button>
     <button class="nav-pill"        onclick="showView('parents')">Parents</button>
@@ -1096,12 +1098,12 @@ const CHEER_MSGS = [
 const today    = new Date();
 const todayDay = DAYS[today.getDay() === 0 ? 6 : today.getDay() - 1];
 
-let state = JSON.parse(localStorage.getItem('chorechamp_v2') || 'null') || {
+let state = JSON.parse(localStorage.getItem('choreschamp_v2') || 'null') || {
   completions: {},
   allowanceReleased: { sara: 0, sophia: 0 },
 };
 
-function saveState() { localStorage.setItem('chorechamp_v2', JSON.stringify(state)); }
+function saveState() { localStorage.setItem('choreschamp_v2', JSON.stringify(state)); }
 
 function isDone(kid, day, name) { return state.completions[`${kid}_${day}_${name}`]?.done || false; }
 function getNote(kid, day, name) { return state.completions[`${kid}_${day}_${name}`]?.note || ''; }
@@ -1399,9 +1401,12 @@ function renderDailyView() {
             <span class="status-pill ${done ? 'done' : 'missing'}">${done ? '✓ Done' : '✗ Missing'}</span>
           </div>`;
         }).join('')}
-        <button class="allowance-release-btn ${kid}-btn" onclick="releaseAllowance('${kid}','${day}',this)" ${isReleased ? 'disabled' : ''}>
-          ${isReleased ? '💸 Allowance Released' : `💰 Release ${KID_NAME[kid]}'s Allowance`}
-        </button>
+        <div style="margin-top:16px;">
+          ${!cleared && !isReleased ? `<div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;">&#9888;&#65039; Complete all chores for this day before releasing allowance.</div>` : ''}
+          <button class="allowance-release-btn ${kid}-btn" onclick="releaseAllowance('${kid}','${day}',this)" ${isReleased || !cleared ? 'disabled' : ''}>
+            ${isReleased ? '\uD83D\uDCB8 Allowance Released' : '\uD83D\uDCB0 Release ' + KID_NAME[kid] + "'s Allowance"}
+          </button>
+        </div>
       </div>
     `;
     grid.appendChild(card);
@@ -1411,9 +1416,9 @@ function renderDailyView() {
 function releaseAllowance(kid, day, btn) {
   const releasedKey = `${kid}_${day}`;
   state.allowanceReleased[releasedKey] = true;
-  const chores  = getChoresForKid(kid, day);
-  const cleared = chores.length > 0 && chores.every(c => isDone(kid, day, c.name));
-  state.allowanceReleased[kid] = (state.allowanceReleased[kid] || 0) + (cleared ? 5 : 2.50);
+  // Button is only enabled when all day's chores are done, so always credit full amount
+  const DAILY_ALLOWANCE = 5.00;
+  state.allowanceReleased[kid] = (state.allowanceReleased[kid] || 0) + DAILY_ALLOWANCE;
   saveState();
   btn.disabled    = true;
   btn.textContent = '💸 Allowance Released';
