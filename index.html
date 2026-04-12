@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChoresChamp 🏆</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -505,6 +506,39 @@
     .logo-text { display: none; }
     .nav-pill { padding: 5px 8px; font-size: 0.7rem; }
   }
+
+  /* ── UPDATE BANNER ── */
+  #update-banner {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 13px 22px;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 8px 32px rgba(102,126,234,0.55);
+    border: 2px solid rgba(255,255,255,0.28);
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    animation: bannerIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  #update-banner:hover {
+    transform: translateX(-50%) scale(1.04);
+    box-shadow: 0 12px 40px rgba(102,126,234,0.7);
+  }
+  @keyframes bannerIn {
+    from { transform: translateX(-50%) translateY(24px); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);   opacity: 1; }
+  }
 </style>
 </head>
 <body>
@@ -519,6 +553,11 @@
     <button class="nav-pill"        onclick="showView('stats')">Stats</button>
   </div>
 </header>
+
+<!-- UPDATE BANNER -->
+<div id="update-banner" role="button" onclick="location.reload()">
+  <span>✨</span> App updated — tap to refresh! <span>🔄</span>
+</div>
 
 <!-- CELEBRATION OVERLAY -->
 <div class="celebration">
@@ -1463,6 +1502,35 @@ async function init() {
 }
 
 init();
+
+// ── UPDATE CHECK ──────────────────────────────────────────
+(function () {
+  let knownETag = null;
+
+  async function fetchETag() {
+    try {
+      const r = await fetch('/', { method: 'HEAD', cache: 'no-store' });
+      return r.headers.get('etag') || r.headers.get('last-modified');
+    } catch { return null; }
+  }
+
+  async function checkForUpdate() {
+    const tag = await fetchETag();
+    if (!tag) return;
+    if (knownETag === null) { knownETag = tag; return; }  // record baseline
+    if (tag !== knownETag) {
+      const banner = document.getElementById('update-banner');
+      banner.style.display = 'flex';
+    }
+  }
+
+  // Baseline on load, then re-check on tab focus and every 5 minutes
+  checkForUpdate();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForUpdate();
+  });
+  setInterval(checkForUpdate, 5 * 60 * 1000);
+})();
 </script>
 </body>
 </html>
